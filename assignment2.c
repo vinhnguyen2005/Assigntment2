@@ -15,6 +15,7 @@ struct Student
 void addstudent();
 void display();
 void search();
+void edit();
 void delete();
 
 int main()
@@ -27,8 +28,9 @@ int main()
         printf("\n\n\t\t\t\t1. Add Student\n");
         printf("\t\t\t\t2. Display Student\n");
         printf("\t\t\t\t3. Search Student\n");
-        printf("\t\t\t\t4. Delete Student\n");
-        printf("\t\t\t\t5. Exit\n");
+        printf("\t\t\t\t4. Edit Student\n");
+        printf("\t\t\t\t5. Delete Student\n");
+        printf("\t\t\t\t6. Exit\n");
         printf("\t\t\t\t______________________________________\n");
         scanf("%d", &choice);
         getchar(); // Consume the newline character left in the input buffer
@@ -44,11 +46,16 @@ int main()
         case 3:
             search();
             break;
-
+        case 4:
+            edit();
+            break;
+        case 5:
+            delete();
+            break;
         default:
             break;
         }
-    } while (choice != 5);
+    } while (choice != 6);
 
     return 0;
 }
@@ -69,7 +76,8 @@ void addstudent()
         stu.Name[strcspn(stu.Name, "\n")] = '\0';
 
         printf("\n\t\t\tEnter ID (e.g., HE190300) : ");
-        scanf("%s", stu.ID);
+        fgets(stu.ID, sizeof(stu.ID), stdin);
+        stu.ID[strcspn(stu.ID, "\n")] = '\0';
 
         for (size_t i = 0; i < strlen(stu.ID); i++)
         {
@@ -77,10 +85,12 @@ void addstudent()
         }
 
         printf("\n\t\t\tEnter Birth(Day-Month-Year) : ");
-        scanf("%s", stu.Birth);
+        fgets(stu.Birth, sizeof(stu.Birth), stdin);
+        stu.Birth[strcspn(stu.Birth, "\n")] = '\0';
 
         printf("\n\t\t\tEnter Class : ");
-        scanf("%s", stu.Chuyen_Nganh);
+        fgets(stu.Chuyen_Nganh, sizeof(stu.Chuyen_Nganh), stdin);
+        stu.Chuyen_Nganh[strcspn(stu.Chuyen_Nganh, "\n")] = '\0';
 
         for (size_t i = 0; i < strlen(stu.Chuyen_Nganh); i++)
         {
@@ -150,7 +160,7 @@ void display()
 
         while (fscanf(fi, "%29s %29s %29s %9s %lf %lf %lf %lf %lf %lf %9s",
                       stu.Name, stu.ID, stu.Birth, stu.Chuyen_Nganh,
-                      &stu.LAB, &stu.PT, &stu.AS, &stu.PE, &stu.FE, &stu.Avg, stu.XepLoai) == 11)
+                      &stu.LAB, &stu.PT, &stu.AS, &stu.PE, &stu.FE, &stu.Avg, stu.XepLoai) != EOF)
         {
             printf("\n\t\t\t\tStudent's Name: %s \n", stu.Name);
             printf("\t\t\t\tStudent's ID: %s \n", stu.ID);
@@ -177,7 +187,7 @@ void search()
     FILE *fi = fopen("input.txt", "r");
     struct Student stu;
 
-    char userInput[30];
+    char userInput[20];
 
     if (fi == NULL)
     {
@@ -188,13 +198,15 @@ void search()
         printf("\t\t\t\t****Search Student Information****\n");
         printf("\t\t\t\t_________________________________\n");
         printf("\t\t\t\tEnter student ID: ");
-        scanf("%s", userInput);
+        fgets(userInput, sizeof(userInput), stdin);
+        userInput[strcspn(userInput, "\n")] = '\0';
+        strupr(userInput); 
 
         int found = 0;
 
         while (fscanf(fi, "%29s %29s %29s %9s %lf %lf %lf %lf %lf %lf %9s",
                       stu.Name, stu.ID, stu.Birth, stu.Chuyen_Nganh,
-                      &stu.LAB, &stu.PT, &stu.AS, &stu.PE, &stu.FE, &stu.Avg, stu.XepLoai) == 11)
+                      &stu.LAB, &stu.PT, &stu.AS, &stu.PE, &stu.FE, &stu.Avg, stu.XepLoai) != EOF)
         {
 
             // Check if the user input matches the student ID
@@ -231,7 +243,195 @@ void search()
     }
 }
 
+void edit()
+{
+    FILE *fi = fopen("input.txt", "r");
+    FILE *fi1 = fopen("temp.txt", "w");
+    struct Student stu;
+    char newID[30];
+
+    if (fi == NULL)
+    {
+        fprintf(stderr, "Could not open file.\n");
+    }
+    else
+    {
+        printf("\t\t\t\t****Edit Student Information****\n");
+        printf("\t\t\t\t_________________________________\n");
+        printf("\t\t\t\tEnter student ID to edit: ");
+        fgets(newID, sizeof(newID), stdin);
+        newID[strcspn(newID, "\n")] = '\0';
+        strupr(newID);
+
+        int found = 0;
+
+        while (fscanf(fi, "%29s %29s %29s %9s %lf %lf %lf %lf %lf %lf %9s",
+                      stu.Name, stu.ID, stu.Birth, stu.Chuyen_Nganh,
+                      &stu.LAB, &stu.PT, &stu.AS, &stu.PE, &stu.FE, &stu.Avg, stu.XepLoai) == 11)
+        {
+            if (strcmp(stu.ID, newID) == 0)
+            {
+                found = 1;
+                printf("\t\t\t\tWhat do you want to update?\n");
+                printf("\t\t\t\t1. Name\n");
+                printf("\t\t\t\t2. ID\n");
+                printf("\t\t\t\t3. Birth\n");
+                printf("\t\t\t\t4. Class\n");
+                printf("\t\t\t\t5. Grades\n");
+                printf("\t\t\t\t6. Exit\n");
+                printf("\t\t\t\t_________________________________\n");
+
+                int updateChoice;
+                scanf("%d", &updateChoice);
+                getchar(); // Consume the newline character left in the input buffer
+
+                switch (updateChoice)
+                {
+                case 1:
+                    printf("\t\t\t\tEnter new Name: ");
+                    fgets(stu.Name, sizeof(stu.Name), stdin);
+                    stu.Name[strcspn(stu.Name, "\n")] = '\0';
+                    break;
+                case 2:
+                    printf("\t\t\t\tEnter new ID: ");
+                    fgets(stu.ID, sizeof(stu.ID), stdin);
+                    stu.ID[strcspn(stu.ID, "\n")] = '\0';
+                    break;
+                case 3:
+                    printf("\t\t\t\tEnter new Birth: ");
+                    fgets(stu.Birth, sizeof(stu.Birth), stdin);
+                    stu.Birth[strcspn(stu.Birth, "\n")] = '\0';
+                    break;
+                case 4:
+                    printf("\t\t\t\tEnter new Class: ");
+                    fgets(stu.Chuyen_Nganh, sizeof(stu.Chuyen_Nganh), stdin);
+                    stu.Chuyen_Nganh[strcspn(stu.Chuyen_Nganh, "\n")] = '\0';
+                    break;
+                case 5:
+                    // Inner switch for updating specific grades
+                    printf("\t\t\t\tWhich grade do you want to update?\n");
+                    printf("\t\t\t\t1. LAB\n");
+                    printf("\t\t\t\t2. PT\n");
+                    printf("\t\t\t\t3. AS\n");
+                    printf("\t\t\t\t4. PE\n");
+                    printf("\t\t\t\t5. FE\n");
+                    printf("\t\t\t\t6. Exit\n");
+                    printf("\t\t\t\t_________________________________\n");
+
+                    int gradeChoice;
+                    scanf("%d", &gradeChoice);
+                    getchar(); // Consume the newline character left in the input buffer
+
+                    switch (gradeChoice)
+                    {
+                    case 1:
+                        printf("\t\t\t\tEnter new LAB grade: ");
+                        scanf("%lf", &stu.LAB);
+                        break;
+                    case 2:
+                        printf("\t\t\t\tEnter new PT grade: ");
+                        scanf("%lf", &stu.PT);
+                        break;
+                    case 3:
+                        printf("\t\t\t\tEnter new AS grade: ");
+                        scanf("%lf", &stu.AS);
+                        break;
+                    case 4:
+                        printf("\t\t\t\tEnter new PE grade: ");
+                        scanf("%lf", &stu.PE);
+                        break;
+                    case 5:
+                        printf("\t\t\t\tEnter new FE grade: ");
+                        scanf("%lf", &stu.FE);
+                        break;
+                    case 6:
+                        // Exit the update grades switch
+                        break;
+                    default:
+                        printf("\t\t\t\tInvalid choice for updating grades.\n");
+                        break;
+                    }
+                    break;
+                case 6:
+                    // Exit the update options switch
+                    break;
+                default:
+                    printf("\t\t\t\tInvalid choice for updating information.\n");
+                    break;
+                }
+            }
+
+            // Write the record to the temporary file
+            fprintf(fi1, "%s %s %s %s %lf %lf %lf %lf %lf %lf %s\n",
+                    stu.Name, stu.ID, stu.Birth, stu.Chuyen_Nganh,
+                    stu.LAB, stu.PT, stu.AS, stu.PE, stu.FE, stu.Avg, stu.XepLoai);
+        }
+
+        fclose(fi);
+        fclose(fi1);
+
+        // Replace the original file with the temporary file
+        remove("input.txt");
+        rename("temp.txt", "input.txt");
+
+        if (found)
+        {
+            printf("\t\t\t\tStudent with ID updated successfully.\n", newID);
+        }
+        else
+        {
+            printf("\t\t\t\tStudent with ID not found.\n", newID);
+        }
+    }
+}
+
+
+
 void delete()
 {
+    FILE *fi = fopen("input.txt", "r");
+    FILE *fi1 = fopen("temp.txt", "w");
+    struct Student stu;
     
+    char deleteinput[20];
+    int found = 0;
+    if (fi == NULL)
+    {
+        fprintf(stderr, "Could not open file.\n");
+    }
+    else
+    {
+        printf("\t\t\t\t****Delete Student Information****\n");
+        printf("\t\t\t\t_________________________________\n");
+        printf("\t\t\t\tEnter student ID to be deleted: ");
+        fgets(deleteinput, 20, stdin);
+        deleteinput[strcspn(deleteinput, "\n")] = '\0';
+        strupr(deleteinput);
+        while (fscanf(fi, "%29s %29s %29s %9s %lf %lf %lf %lf %lf %lf %9s",
+                      stu.Name, stu.ID, stu.Birth, stu.Chuyen_Nganh,
+                      &stu.LAB, &stu.PT, &stu.AS, &stu.PE, &stu.FE, &stu.Avg, stu.XepLoai) != EOF)
+        {
+            if (strcmp(stu.ID, deleteinput) == 0) 
+            {
+                found = 1;
+            }
+            else
+            {
+               fprintf(fi1, "%s %s %s %s %lf %lf %lf %lf %lf %lf %s\n",
+                    stu.Name, stu.ID, stu.Birth, stu.Chuyen_Nganh, stu.LAB, stu.PT, stu.AS, stu.PE, stu.FE, stu.Avg, stu.XepLoai);
+            }
+        }
+        fclose(fi);
+        fclose(fi1);
+        if (found)
+        {
+            remove("input.txt");
+            rename("temp.txt","input.txt");
+            printf("\t\t\t\tDeleted successfully!\n");
+        }
+        else
+        {
+            printf("\t\t\t\tDeleted unsuccessfully cause Student not found!\n");
+        }
+    }
 }
